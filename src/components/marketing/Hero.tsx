@@ -4,7 +4,6 @@ import {
   Check,
   Flame,
   Lock,
-  Sparkles,
 } from "lucide-react";
 import { LinkButton } from "@/components/ui/Button";
 import { Sage } from "@/components/brand/Mascots";

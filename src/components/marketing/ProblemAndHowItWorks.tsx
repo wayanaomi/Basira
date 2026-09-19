@@ -36,7 +36,7 @@ export function ProblemSection() {
           </p>
 
           <h2 className="mt-5 max-w-lg font-display text-4xl font-bold leading-tight tracking-tight text-indigo sm:text-5xl">
-            Studying more doesn't always mean knowing more.
+            Studying more doesnt&apos;s always mean knowing more.
           </h2>
 
           <p className="mt-6 max-w-md leading-7 text-ink/60">
