@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+:root {
+  --color-indigo: #2e1a5e;
+  --color-gold: #e8a93f;
+  --color-violet: #684fa0;
+  --color-mist: #f6f3fc;
+  --color-paper: #fffefc;
+  --color-ink: #1b1030;
+  --color-ember: #f2784b;
+  --color-sage: #3fae6b;
+  --color-alert: #e5595b;
+  --color-xp-gold: #e8a93f;
+
+  --background: #f6f3fc;
+  --foreground: #1b1030;
+}
+
+.dark {
+  --color-indigo: #a995dc;
+  --color-gold: #f0b957;
+  --color-violet: #a995dc;
+  --color-mist: #100b1c;
+  --color-paper: #191329;
+  --color-ink: #f8f5ff;
+  --color-ember: #f58a63;
+  --color-sage: #5bc985;
+  --color-alert: #ef7779;
+  --color-xp-gold: #f0b957;
+
+  --background: #100b1c;
+  --foreground: #f8f5ff;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-indigo: var(--color-indigo);
+  --color-gold: var(--color-gold);
+  --color-violet: var(--color-violet);
+  --color-mist: var(--color-mist);
+  --color-paper: var(--color-paper);
+  --color-ink: var(--color-ink);
+  --color-ember: var(--color-ember);
+  --color-sage: var(--color-sage);
+  --color-alert: var(--color-alert);
+  --color-xp-gold: var(--color-xp-gold);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono-basira: var(--font-mono-basira);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  transition:
+    background-color 220ms ease,
+    color 220ms ease;
+}
+
+::selection {
+  background: color-mix(
+    in srgb,
+    var(--color-gold) 45%,
+    transparent
+  );
+  color: var(--color-ink);
+}
+
+.input {
+  @apply w-full rounded-xl border border-ink/15 bg-paper px-3.5 py-2.5 text-ink placeholder:text-ink/30 focus:border-indigo focus:outline-none focus:ring-2 focus:ring-indigo/20;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

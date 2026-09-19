@@ -1,0 +1,469 @@
+// BASIRA data model.
+//
+// Note on enums: the dev datasource is SQLite, which does not support native
+// Prisma `enum` types. Enum-like fields are modeled as `String` and validated
+// at the application boundary against the literal unions in `src/lib/constants.ts`.
+// This keeps the schema portable to Postgres later (where real enums could be
+// introduced) without an app-level rewrite.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Auth (NextAuth.js Prisma adapter models + BASIRA user/profile)
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  role          String    @default("STUDENT") // STUDENT | ADMIN
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+
+  profile          StudentProfile?
+  streak           Streak?
+  xpTransactions   XPTransaction[]
+  lessonProgress   LessonProgress[]
+  questionAttempts QuestionAttempt[]
+  topicMastery     TopicMastery[]
+  studySessions    StudySession[]
+  dailyGoalLogs    DailyGoalLog[]
+  achievements     UserAchievement[]
+  mockExamAttempts MockExamAttempt[]
+  recommendations  Recommendation[]
+  notifications    Notification[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Onboarding output: what exam the student is preparing for and how.
+model StudentProfile {
+  id                    String    @id @default(cuid())
+  userId                String    @unique
+  examId                String?
+  targetScore           String? // e.g. "300" for JAMB, "7.0" for IELTS band
+  dailyGoalMinutes      Int       @default(10)
+  studyLevel            String? // SELF_REPORTED_LEVEL: BEGINNER | INTERMEDIATE | ADVANCED
+  examDate              DateTime?
+  onboardingCompletedAt DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exam     Exam?            @relation(fields: [examId], references: [id])
+  subjects StudentSubject[]
+}
+
+// Which subjects/skills within the chosen exam the student picked during onboarding.
+model StudentSubject {
+  id        String   @id @default(cuid())
+  profileId String
+  subjectId String
+  createdAt DateTime @default(now())
+
+  profile StudentProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  subject Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, subjectId])
+}
+
+// ---------------------------------------------------------------------------
+// Content architecture (system/educational data — safe to seed)
+// ---------------------------------------------------------------------------
+
+model Exam {
+  id          String  @id @default(cuid())
+  slug        String  @unique // e.g. "jamb-utme", "ielts"
+  name        String
+  shortName   String
+  description String
+  isActive    Boolean @default(true)
+  order       Int     @default(0)
+
+  subjects        Subject[]
+  mockExams       MockExam[]
+  studentProfiles StudentProfile[]
+}
+
+model Subject {
+  id          String @id @default(cuid())
+  examId      String
+  slug        String
+  name        String
+  description String @default("")
+  // SUBJECT for exam subjects (Mathematics, Physics) or SKILL for skill-based
+  // exams like IELTS (Listening, Reading, Writing, Speaking).
+  kind        String @default("SUBJECT")
+  order       Int    @default(0)
+
+  exam     Exam             @relation(fields: [examId], references: [id], onDelete: Cascade)
+  topics   Topic[]
+  students StudentSubject[]
+
+  @@unique([examId, slug])
+}
+
+model Topic {
+  id          String @id @default(cuid())
+  subjectId   String
+  slug        String
+  name        String
+  description String @default("")
+  order       Int    @default(0)
+
+  subject   Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subtopics Subtopic[]
+  lessons   Lesson[]
+  questions Question[]
+  mastery   TopicMastery[]
+
+  @@unique([subjectId, slug])
+}
+
+model Subtopic {
+  id      String @id @default(cuid())
+  topicId String
+  name    String
+  order   Int    @default(0)
+
+  topic   Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  lessons Lesson[]
+}
+
+model Lesson {
+  id               String  @id @default(cuid())
+  topicId          String
+  subtopicId       String?
+  title            String
+  order            Int     @default(0)
+  estimatedMinutes Int     @default(8)
+  // Structured lesson content: intro / concept / example steps, stored as JSON
+  // so lesson authoring stays data-driven rather than hard-coded in components.
+  content          String  @default("[]")
+  isPublished      Boolean @default(true)
+
+  topic     Topic            @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  subtopic  Subtopic?        @relation(fields: [subtopicId], references: [id])
+  questions Question[]
+  progress  LessonProgress[]
+}
+
+model Question {
+  id          String   @id @default(cuid())
+  topicId     String
+  lessonId    String?
+  // MULTIPLE_CHOICE | TRUE_FALSE | CALCULATION | FILL_IN | IMAGE | PASSAGE
+  type        String   @default("MULTIPLE_CHOICE")
+  prompt      String
+  passageText String?
+  imageUrl    String?
+  // EASY | MEDIUM | HARD
+  difficulty  String   @default("MEDIUM")
+  explanation String
+  source      String?
+  year        Int?
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  topic           Topic              @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  lesson          Lesson?            @relation(fields: [lessonId], references: [id])
+  options         QuestionOption[]
+  tags            QuestionTag[]
+  attempts        QuestionAttempt[]
+  mockExamEntries MockExamQuestion[]
+  mockExamAnswers MockExamAnswer[]
+}
+
+model QuestionOption {
+  id         String  @id @default(cuid())
+  questionId String
+  text       String
+  isCorrect  Boolean @default(false)
+  order      Int     @default(0)
+
+  question         Question          @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionAttempts QuestionAttempt[]
+  mockExamAnswers  MockExamAnswer[]
+}
+
+model Tag {
+  id   String @id @default(cuid())
+  name String @unique
+
+  questions QuestionTag[]
+}
+
+model QuestionTag {
+  questionId String
+  tagId      String
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  tag      Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([questionId, tagId])
+}
+
+// ---------------------------------------------------------------------------
+// Gamification content (system data: level thresholds & achievement defs)
+// ---------------------------------------------------------------------------
+
+model Level {
+  id    String @id @default(cuid())
+  name  String // Beginner | Explorer | Learner | Scholar | Achiever
+  minXp Int    @unique
+  order Int    @default(0)
+}
+
+model Achievement {
+  id          String @id @default(cuid())
+  key         String @unique // FIRST_LESSON | STREAK_7 | QUESTIONS_100 | ...
+  name        String
+  description String
+  icon        String @default("spark") // maps to an icon in the badge component
+
+  users UserAchievement[]
+}
+
+// ---------------------------------------------------------------------------
+// Learner activity (NEVER seeded — starts empty for every real user)
+// ---------------------------------------------------------------------------
+
+model Streak {
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  currentStreak  Int       @default(0)
+  longestStreak  Int       @default(0)
+  lastActiveDate DateTime?
+  updatedAt      DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model XPTransaction {
+  id        String   @id @default(cuid())
+  userId    String
+  amount    Int
+  // LESSON_COMPLETE | CORRECT_ANSWER | DAILY_GOAL | MOCK_COMPLETE | ACHIEVEMENT
+  reason    String
+  metadata  String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model LessonProgress {
+  id          String    @id @default(cuid())
+  userId      String
+  lessonId    String
+  // NOT_STARTED | IN_PROGRESS | COMPLETED
+  status      String    @default("NOT_STARTED")
+  score       Int?
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+}
+
+model QuestionAttempt {
+  id               String   @id @default(cuid())
+  userId           String
+  questionId       String
+  selectedOptionId String?
+  textAnswer       String?
+  isCorrect        Boolean
+  timeSpentMs      Int?
+  // LESSON | REVIEW | MOCK
+  source           String   @default("LESSON")
+  attemptedAt      DateTime @default(now())
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question       Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedOption QuestionOption? @relation(fields: [selectedOptionId], references: [id])
+}
+
+model TopicMastery {
+  id                 String    @id @default(cuid())
+  userId             String
+  topicId            String
+  masteryPercent     Int       @default(0)
+  questionsAttempted Int       @default(0)
+  questionsCorrect   Int       @default(0)
+  lastReviewedAt     DateTime?
+  updatedAt          DateTime  @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, topicId])
+}
+
+model StudySession {
+  id              String    @id @default(cuid())
+  userId          String
+  startedAt       DateTime  @default(now())
+  endedAt         DateTime?
+  durationSeconds Int       @default(0)
+  xpEarned        Int       @default(0)
+  // LESSON | REVIEW | MOCK
+  source          String    @default("LESSON")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model DailyGoalLog {
+  id             String   @id @default(cuid())
+  userId         String
+  date           DateTime // date-only, stored at midnight UTC
+  minutesStudied Int      @default(0)
+  goalMinutes    Int
+  goalMet        Boolean  @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+}
+
+model UserAchievement {
+  id            String   @id @default(cuid())
+  userId        String
+  achievementId String
+  earnedAt      DateTime @default(now())
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+}
+
+model MockExam {
+  id              String  @id @default(cuid())
+  examId          String
+  title           String
+  instructions    String
+  durationMinutes Int     @default(60)
+  isPublished     Boolean @default(false)
+
+  exam      Exam               @relation(fields: [examId], references: [id], onDelete: Cascade)
+  questions MockExamQuestion[]
+  attempts  MockExamAttempt[]
+}
+
+model MockExamQuestion {
+  mockExamId String
+  questionId String
+  order      Int    @default(0)
+
+  mockExam MockExam @relation(fields: [mockExamId], references: [id], onDelete: Cascade)
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@id([mockExamId, questionId])
+}
+
+model MockExamAttempt {
+  id               String    @id @default(cuid())
+  userId           String
+  mockExamId       String
+  startedAt        DateTime  @default(now())
+  submittedAt      DateTime?
+  score            Int?
+  totalQuestions   Int       @default(0)
+  timeSpentSeconds Int       @default(0)
+  // IN_PROGRESS | SUBMITTED
+  status           String    @default("IN_PROGRESS")
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mockExam MockExam         @relation(fields: [mockExamId], references: [id], onDelete: Cascade)
+  answers  MockExamAnswer[]
+}
+
+model MockExamAnswer {
+  id               String  @id @default(cuid())
+  attemptId        String
+  questionId       String
+  selectedOptionId String?
+  textAnswer       String?
+  isCorrect        Boolean @default(false)
+
+  attempt        MockExamAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question       Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedOption QuestionOption? @relation(fields: [selectedOptionId], references: [id])
+
+  @@unique([attemptId, questionId])
+}
+
+model Recommendation {
+  id          String    @id @default(cuid())
+  userId      String
+  // REVIEW_TOPIC | CONTINUE_LESSON | TAKE_MOCK
+  type        String
+  topicId     String?
+  lessonId    String?
+  reason      String
+  createdAt   DateTime  @default(now())
+  dismissedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  body      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

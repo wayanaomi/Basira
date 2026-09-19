@@ -1,0 +1,4 @@
+{
+    "chat.disableAIFeatures": false,
+    "prisma.pinToPrisma6": true
+}
