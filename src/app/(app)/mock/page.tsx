@@ -1,60 +1,102 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { createPersonalizedUtmeMock, getStudentUtmeSubjects } from "@/lib/actions/mock";
 
-import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
-import { LinkButton } from "@/components/ui/Button";
+export default async function MockPage() {
+  let data;
 
-export default async function MockExamListPage() {
-  const session = await auth();
-  const userId = session!.user.id;
+  try {
+    data = await getStudentUtmeSubjects();
+  } catch {
+    redirect("/onboarding");
+  }
 
-  const profile = await prisma.studentProfile.findUnique({ where: { userId } });
-  if (!profile?.examId) redirect("/onboarding");
+  const { subjects } = data;
 
-  const mockExams = await prisma.mockExam.findMany({
-    where: { examId: profile.examId, isPublished: true },
-    include: {
-      questions: true,
-      attempts: { where: { userId }, orderBy: { startedAt: "desc" } },
-    },
-  });
+  async function startMock() {
+    "use server";
+
+    const mock = await createPersonalizedUtmeMock();
+
+    redirect(`/mock/${mock.id}`);
+  }
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-8">
-      <h1 className="font-display text-2xl font-semibold text-indigo">Mock exams</h1>
-      <p className="mt-1 text-sm text-ink/60">
-        Realistic, timed practice. Results are a preparation signal — not a guarantee.
-      </p>
+    <main className="min-h-screen bg-cloud-mist px-5 py-10 text-ink">
+      <div className="mx-auto max-w-4xl">
+        <div className="mb-8">
+          <p className="font-mono-basira text-xs font-semibold uppercase tracking-[0.2em] text-violet">
+            UTME Practice
+          </p>
 
-      {mockExams.length === 0 ? (
-        <p className="mt-10 text-sm text-ink/50">
-          No mock exam available for your exam yet. Check back soon.
-        </p>
-      ) : (
-        <div className="mt-8 flex flex-col gap-4">
-          {mockExams.map((exam) => {
-            const bestScore = exam.attempts
-              .filter((a) => a.status === "SUBMITTED")
-              .reduce((max, a) => Math.max(max, a.score ?? 0), -1);
-            const inProgress = exam.attempts.find((a) => a.status === "IN_PROGRESS");
+          <h1 className="mt-3 font-display text-4xl font-bold tracking-tight text-indigo">
+            Your mock follows your subjects.
+          </h1>
 
-            return (
-              <div key={exam.id} className="rounded-3xl bg-paper p-6">
-                <p className="font-display font-semibold text-indigo">{exam.title}</p>
-                <p className="mt-1 text-sm text-ink/60">
-                  {exam.questions.length} questions &middot; {exam.durationMinutes} min
-                </p>
-                {bestScore >= 0 && (
-                  <p className="mt-1 text-xs text-sage">Best score: {bestScore}%</p>
-                )}
-                <LinkButton href={`/mock/${exam.id}`} size="sm" className="mt-4">
-                  {inProgress ? "Resume" : bestScore >= 0 ? "Retake" : "Start"}
-                </LinkButton>
-              </div>
-            );
-          })}
+          <p className="mt-4 max-w-2xl text-base leading-7 text-ink/60">
+            Basira uses the subjects you selected during onboarding.
+            There is no fixed science mock or fixed arts mock.
+          </p>
         </div>
-      )}
-    </div>
+
+        <section className="rounded-3xl border border-indigo/10 bg-paper p-6 shadow-sm">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-ink">
+                Your UTME combination
+              </p>
+
+              <p className="mt-1 text-sm text-ink/50">
+                Use of English + three other subjects
+              </p>
+            </div>
+
+            <Link
+              href="/onboarding"
+              className="text-sm font-semibold text-indigo underline underline-offset-4"
+            >
+              Change subjects
+            </Link>
+          </div>
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            {subjects.map((subject) => (
+              <div
+                key={subject.id}
+                className="rounded-2xl border border-indigo/10 bg-cloud-mist px-4 py-4"
+              >
+                <p className="font-semibold text-indigo">
+                  {subject.name}
+                </p>
+
+                <p className="mt-1 text-xs text-ink/50">
+                  Included in your practice mock
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 rounded-2xl border border-gold/30 bg-gold/10 p-5">
+            <p className="font-semibold text-indigo">
+              Basira Practice Mock
+            </p>
+
+            <p className="mt-2 text-sm leading-6 text-ink/60">
+              20 questions · 20 minutes · randomized questions ·
+              subject-specific scoring
+            </p>
+          </div>
+
+          <form action={startMock} className="mt-6">
+            <button
+              type="submit"
+              className="w-full rounded-2xl bg-indigo px-6 py-4 text-sm font-semibold text-white transition hover:opacity-90"
+            >
+              Start my mock
+            </button>
+          </form>
+        </section>
+      </div>
+    </main>
   );
 }

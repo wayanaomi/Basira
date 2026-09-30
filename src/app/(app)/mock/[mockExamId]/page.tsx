@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 
 import { auth } from "@/auth";
+import { getMockExamForStudent } from "@/lib/actions/mock";
 import { prisma } from "@/lib/prisma";
 import { startMockAttempt } from "@/lib/actions/mock";
 import { MockExamPlayer } from "@/components/assessment/MockExamPlayer";
@@ -9,31 +10,84 @@ export default async function MockExamAttemptPage({
   params,
 }: PageProps<"/mock/[mockExamId]">) {
   const { mockExamId } = await params;
-  const session = await auth();
-  const userId = session!.user.id;
 
-  const mockExam = await prisma.mockExam.findUnique({
-    where: { id: mockExamId },
-    include: {
-      questions: {
-        orderBy: { order: "asc" },
-        include: { question: { include: { options: { orderBy: { order: "asc" } } } } },
-      },
-    },
-  });
-  if (!mockExam) notFound();
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
+
+  const userId = session.user.id;
+
+  let mockExam;
+
+  try {
+    mockExam = await getMockExamForStudent(mockExamId);
+  } catch {
+    notFound();
+  }
 
   const existingSubmitted = await prisma.mockExamAttempt.findFirst({
-    where: { userId, mockExamId, status: "SUBMITTED" },
-    orderBy: { submittedAt: "desc" },
+    where: {
+      userId,
+      mockExamId,
+      status: "SUBMITTED",
+    },
+    orderBy: {
+      submittedAt: "desc",
+    },
   });
+
+  if (existingSubmitted) {
+    redirect(
+      `/mock/${mockExamId}/results/${existingSubmitted.id}`,
+    );
+  }
 
   const attemptId = await startMockAttempt(mockExamId);
 
-  const existingAnswers = await prisma.mockExamAnswer.findMany({ where: { attemptId } });
-  const answersByQuestion = new Map(existingAnswers.map((a) => [a.questionId, a.selectedOptionId]));
+  const attempt = await prisma.mockExamAttempt.findUnique({
+    where: {
+      id: attemptId,
+    },
+  });
 
-  if (existingSubmitted) redirect(`/mock/${mockExamId}/results/${existingSubmitted.id}`);
+  if (!attempt) {
+    notFound();
+  }
+
+  const existingAnswers = await prisma.mockExamAnswer.findMany({
+    where: {
+      attemptId,
+    },
+    select: {
+      questionId: true,
+      selectedOptionId: true,
+    },
+  });
+
+  const answersByQuestion = new Map(
+    existingAnswers.map((answer) => [
+      answer.questionId,
+      answer.selectedOptionId,
+    ]),
+  );
+
+  const remainingSeconds = Math.max(
+    0,
+    Math.ceil(
+      (attempt.startedAt.getTime() +
+        mockExam.durationMinutes * 60 * 1000 -
+        Date.now()) /
+        1000,
+    ),
+  );
+
+  if (remainingSeconds <= 0) {
+    redirect(
+      `/mock/${mockExamId}/results/${attemptId}`,
+    );
+  }
 
   return (
     <MockExamPlayer
@@ -42,11 +96,16 @@ export default async function MockExamAttemptPage({
       title={mockExam.title}
       instructions={mockExam.instructions}
       durationMinutes={mockExam.durationMinutes}
-      questions={mockExam.questions.map((mq) => ({
-        id: mq.question.id,
-        prompt: mq.question.prompt,
-        options: mq.question.options.map((o) => ({ id: o.id, text: o.text })),
-        selectedOptionId: answersByQuestion.get(mq.question.id) ?? null,
+      remainingSeconds={remainingSeconds}
+      questions={mockExam.questions.map((mockQuestion) => ({
+        id: mockQuestion.question.id,
+        prompt: mockQuestion.question.prompt,
+        options: mockQuestion.question.options.map((option) => ({
+          id: option.id,
+          text: option.text,
+        })),
+        selectedOptionId:
+          answersByQuestion.get(mockQuestion.question.id) ?? null,
       }))}
     />
   );

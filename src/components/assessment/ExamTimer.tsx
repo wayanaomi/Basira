@@ -4,26 +4,33 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 export function ExamTimer({
-  durationMinutes,
+  initialSeconds,
   onExpire,
 }: {
-  durationMinutes: number;
+  initialSeconds: number;
   onExpire: () => void;
 }) {
-  const [secondsLeft, setSecondsLeft] = useState(durationMinutes * 60);
+  const [secondsLeft, setSecondsLeft] = useState(
+    Math.max(0, initialSeconds),
+  );
 
   useEffect(() => {
     if (secondsLeft <= 0) {
       onExpire();
       return;
     }
-    const timer = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
-    return () => clearTimeout(timer);
+
+    const timer = window.setInterval(() => {
+      setSecondsLeft((current) => Math.max(0, current - 1));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
   }, [secondsLeft, onExpire]);
 
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
-  const low = secondsLeft < 60;
+
+  const low = secondsLeft <= 60;
 
   return (
     <span
@@ -31,6 +38,7 @@ export function ExamTimer({
         "font-mono-basira text-lg font-semibold",
         low ? "text-alert" : "text-indigo",
       )}
+      aria-live="polite"
     >
       {minutes}:{seconds.toString().padStart(2, "0")}
     </span>
