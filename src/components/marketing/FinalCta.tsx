@@ -1,4 +1,4 @@
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { LinkButton } from "@/components/ui/Button";
 import { Sage } from "@/components/brand/Mascots";
 
@@ -13,8 +13,7 @@ export function FinalCta() {
             <Sage className="h-16 w-16" />
           </div>
 
-          <div className="mt-7 inline-flex items-center gap-2 font-mono-basira text-xs font-semibold uppercase tracking-[0.2em] text-ink/50">
-            <Sparkles className="h-3.5 w-3.5" />
+          <div className="mt-7 font-mono-basira text-xs font-semibold uppercase tracking-[0.2em] text-ink/50">
             Your next insight is waiting
           </div>
 
