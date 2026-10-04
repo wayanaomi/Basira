@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 
 async function requireAdmin() {
   const session = await auth();
@@ -13,6 +14,17 @@ async function requireAdmin() {
   return session;
 }
 
+function revalidateProAccess() {
+  revalidatePath("/admin/users");
+  revalidatePath("/dashboard");
+  revalidatePath("/mock");
+  revalidatePath("/performance");
+  revalidatePath("/recommendations");
+  revalidatePath("/wrong-answers");
+  revalidatePath("/mock-analysis");
+  revalidatePath("/upgrade");
+}
+
 export async function activatePro(userId: string, months = 1) {
   await requireAdmin();
 
@@ -21,7 +33,7 @@ export async function activatePro(userId: string, months = 1) {
 
   expiresAt.setMonth(expiresAt.getMonth() + months);
 
-  return prisma.subscription.upsert({
+  const subscription = await prisma.subscription.upsert({
     where: { userId },
     create: {
       userId,
@@ -37,12 +49,16 @@ export async function activatePro(userId: string, months = 1) {
       expiresAt,
     },
   });
+
+  revalidateProAccess();
+
+  return subscription;
 }
 
 export async function deactivatePro(userId: string) {
   await requireAdmin();
 
-  return prisma.subscription.upsert({
+  const subscription = await prisma.subscription.upsert({
     where: { userId },
     create: {
       userId,
@@ -56,4 +72,8 @@ export async function deactivatePro(userId: string) {
       expiresAt: new Date(),
     },
   });
+
+  revalidateProAccess();
+
+  return subscription;
 }

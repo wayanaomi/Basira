@@ -7,6 +7,7 @@ export type LeaderboardEntry = {
   rank: number;
   userId: string;
   name: string;
+  username: string;
   xp: number;
   isCurrentUser: boolean;
 };
@@ -45,6 +46,7 @@ export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
     select: {
       id: true,
       name: true,
+      username: true,
     },
   });
 
@@ -57,6 +59,7 @@ export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
       rank: index + 1,
       userId: entry.userId,
       name: user?.name?.trim() || "Learner",
+      username: user?.username || "learner",
       xp: entry._sum.amount ?? 0,
       isCurrentUser: entry.userId === currentUserId,
     };

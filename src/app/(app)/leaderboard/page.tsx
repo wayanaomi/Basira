@@ -88,6 +88,10 @@ export default async function LeaderboardPage() {
                       {entry.name}
                     </p>
 
+                    <p className="mt-0.5 truncate text-xs text-ink/45">
+                      @{entry.username}
+                    </p>
+
                     {entry.isCurrentUser && (
                       <p className="mt-0.5 text-xs font-medium text-indigo">
                         You

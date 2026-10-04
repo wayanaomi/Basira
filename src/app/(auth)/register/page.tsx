@@ -26,8 +26,7 @@ export default function RegisterPage() {
               A little insight, every day.
             </p>
             <p className="text-sm text-paper/70">
-              Tell us your name, pick a password, and Sage will build your
-              first learning path.
+              
             </p>
           </div>
           <p className="text-xs text-paper/50">
@@ -50,7 +49,21 @@ export default function RegisterPage() {
               name="name"
               type="text"
               autoComplete="name"
-              placeholder="Ada"
+              placeholder="Lex"
+              className="input"
+            />
+          </Field>
+
+          <Field
+            label="Username"
+            name="username"
+            error={state.fieldErrors?.username}
+          >
+            <input
+              name="username"
+              type="text"
+              autoComplete="username"
+              placeholder="lexxy"
               className="input"
             />
           </Field>
@@ -60,7 +73,7 @@ export default function RegisterPage() {
               name="email"
               type="email"
               autoComplete="email"
-              placeholder="you@example.com"
+              placeholder="lex@email.com"
               className="input"
             />
           </Field>

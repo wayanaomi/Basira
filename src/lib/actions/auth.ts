@@ -17,32 +17,81 @@ export async function registerAction(
 ): Promise<AuthActionState> {
   const parsed = registerSchema.safeParse({
     name: formData.get("name"),
+    username: formData.get("username"),
     email: formData.get("email"),
     password: formData.get("password"),
   });
 
   if (!parsed.success) {
     const fieldErrors: Record<string, string> = {};
+
     for (const issue of parsed.error.issues) {
       fieldErrors[String(issue.path[0])] = issue.message;
     }
+
     return { fieldErrors };
   }
 
-  const { name, email, password } = parsed.data;
+  const { name, username, email, password } = parsed.data;
 
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) {
-    return { fieldErrors: { email: "An account with this email already exists." } };
+  const existingEmail = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (existingEmail) {
+    return {
+      fieldErrors: {
+        email: "An account with this email already exists.",
+      },
+    };
+  }
+
+  const existingUsername = await prisma.user.findUnique({
+    where: { username },
+  });
+
+  if (existingUsername) {
+    return {
+      fieldErrors: {
+        username: "Username taken. Please choose another username.",
+      },
+    };
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
 
-  await prisma.user.create({
-    data: { name, email, passwordHash, role: "STUDENT" },
-  });
+  try {
+    await prisma.user.create({
+      data: {
+        name,
+        username,
+        email,
+        passwordHash,
+        role: "STUDENT",
+      },
+    });
+  } catch (error) {
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "P2002"
+    ) {
+      return {
+        fieldErrors: {
+          username: "Username taken. Please choose another username.",
+        },
+      };
+    }
 
-  await signIn("credentials", { email, password, redirectTo: "/onboarding" });
+    throw error;
+  }
+
+  await signIn("credentials", {
+    email,
+    password,
+    redirectTo: "/onboarding",
+  });
 
   return {};
 }
@@ -55,11 +104,16 @@ export async function loginAction(
   const password = String(formData.get("password") ?? "");
 
   try {
-    await signIn("credentials", { email, password, redirectTo: "/dashboard" });
+    await signIn("credentials", {
+      email,
+      password,
+      redirectTo: "/dashboard",
+    });
   } catch (error) {
     if (error && typeof error === "object" && "type" in error) {
       return { error: "That email and password don't match." };
     }
+
     throw error;
   }
 
