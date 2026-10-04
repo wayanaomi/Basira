@@ -33,8 +33,7 @@ export default async function UpgradePage() {
         </h1>
 
         <p className="mt-3 max-w-xl text-ink/65">
-          Get deeper exam preparation tools designed to help you understand
-          your weaknesses, practise deliberately, and prepare with confidence.
+
         </p>
 
         <div className="mt-8">
@@ -87,8 +86,7 @@ export default async function UpgradePage() {
             </a>
 
             <p className="mt-3 text-xs text-ink/45">
-              Payment is securely completed through Selar. Your Pro access
-              will be activated after payment confirmation.
+              Your Pro access will be activated after payment confirmation.
             </p>
           </div>
         )}

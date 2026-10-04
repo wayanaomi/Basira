@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { LinkButton } from "@/components/ui/Button";
 import { MasteryBar } from "@/components/gamification/MasteryBar";
+import { isPro } from "@/lib/subscription";
 
 type TopicResult = {
   id: string;
@@ -32,6 +33,7 @@ export default async function MockResultsPage({
   }
 
   const userId = session.user.id;
+  const pro = await isPro(userId);
 
   const attempt = await prisma.mockExamAttempt.findUnique({
     where: { id: attemptId },
@@ -132,6 +134,38 @@ export default async function MockResultsPage({
   const score = attempt.totalQuestions
     ? Math.round((correctAnswers / attempt.totalQuestions) * 100)
     : 0;
+
+  const wrongAnswers = attempt.answers.filter(
+    (answer) => !answer.isCorrect,
+  ).length;
+
+  const rankedSubjects = subjectResults
+    .map((subject) => ({
+      ...subject,
+      accuracy: subject.total
+        ? Math.round((subject.correct / subject.total) * 100)
+        : 0,
+    }))
+    .sort((a, b) => a.accuracy - b.accuracy);
+
+  const weakestSubject = rankedSubjects[0] ?? null;
+  const strongestSubject =
+    rankedSubjects[rankedSubjects.length - 1] ?? null;
+
+  const rankedTopics = subjectResults
+    .flatMap((subject) =>
+      subject.topics.map((topic) => ({
+        ...topic,
+        subjectId: subject.id,
+        subjectName: subject.name,
+        accuracy: topic.total
+          ? Math.round((topic.correct / topic.total) * 100)
+          : 0,
+      })),
+    )
+    .sort((a, b) => a.accuracy - b.accuracy);
+
+  const weakestTopic = rankedTopics[0] ?? null;
 
   return (
     <main className="min-h-screen bg-cloudMist px-4 py-8 sm:px-6 sm:py-10">
@@ -282,6 +316,144 @@ export default async function MockResultsPage({
               );
             })}
           </div>
+        </section>
+
+        {/* Pro intelligence */}
+        <section className="mt-10 rounded-3xl border border-indigo/10 bg-paperWhite p-6 shadow-sm sm:p-7">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-gold">
+                Basira Pro
+              </p>
+
+              <h2 className="mt-1 font-display text-2xl font-semibold text-indigo">
+                What this result tells you
+              </h2>
+
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-ink/55">
+                Turn this mock result into a focused revision plan instead of
+                guessing what to study next.
+              </p>
+            </div>
+          </div>
+
+          {!pro ? (
+            <div className="mt-6 rounded-2xl border border-indigo/10 bg-cloudMist p-5">
+              <h3 className="font-display text-lg font-semibold text-indigo">
+                Unlock your personalised mock insights
+              </h3>
+
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-ink/55">
+                Basira Pro turns your mock results into weakness detection,
+                revision recommendations, performance trends and a connected
+                wrong-answer review flow.
+              </p>
+
+              <div className="mt-5">
+                <LinkButton href="/upgrade" variant="primary">
+                  Upgrade to Basira Pro
+                </LinkButton>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="rounded-2xl border border-indigo/10 bg-cloudMist p-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-ink/45">
+                    Strongest subject
+                  </p>
+
+                  <p className="mt-2 font-display text-lg font-semibold text-indigo">
+                    {strongestSubject?.name ?? "—"}
+                  </p>
+
+                  <p className="mt-1 font-mono text-sm text-sage">
+                    {strongestSubject?.accuracy ?? 0}%
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-indigo/10 bg-cloudMist p-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-ink/45">
+                    Needs attention
+                  </p>
+
+                  <p className="mt-2 font-display text-lg font-semibold text-indigo">
+                    {weakestSubject?.name ?? "—"}
+                  </p>
+
+                  <p className="mt-1 font-mono text-sm text-ember">
+                    {weakestSubject?.accuracy ?? 0}%
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-indigo/10 bg-cloudMist p-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-ink/45">
+                    Weakest topic
+                  </p>
+
+                  <p className="mt-2 font-display text-lg font-semibold text-indigo">
+                    {weakestTopic?.name ?? "—"}
+                  </p>
+
+                  <p className="mt-1 font-mono text-sm text-ember">
+                    {weakestTopic?.accuracy ?? 0}%
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-indigo/10 bg-cloudMist p-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-ink/45">
+                    Wrong answers
+                  </p>
+
+                  <p className="mt-2 font-mono text-2xl font-semibold text-indigo">
+                    {wrongAnswers}
+                  </p>
+
+                  <p className="mt-1 text-xs text-ink/45">
+                    Questions to review
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 rounded-2xl border border-indigo/10 bg-indigo p-5 text-paperWhite">
+                <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-gold">
+                  Recommended next step
+                </p>
+
+                <h3 className="mt-2 font-display text-xl font-semibold">
+                  {weakestTopic
+                    ? `Review ${weakestTopic.name}`
+                    : weakestSubject
+                      ? `Review ${weakestSubject.name}`
+                      : "Keep practising"}
+                </h3>
+
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-paperWhite/70">
+                  {weakestTopic
+                    ? `${weakestTopic.name} was your weakest topic in this mock. Start there before taking another full mock.`
+                    : "Use your performance history and wrong answers to decide what to revise next."}
+                </p>
+              </div>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <LinkButton href="/wrong-answers" variant="ghost">
+                  Review wrong answers
+                </LinkButton>
+
+                <LinkButton href="/recommendations" variant="ghost">
+                  Open study plan
+                </LinkButton>
+
+                <LinkButton href="/performance" variant="ghost">
+                  View performance
+                </LinkButton>
+
+                <LinkButton href="/mock-analysis" variant="ghost">
+                  Analyse your mocks
+                </LinkButton>
+              </div>
+            </>
+          )}
         </section>
 
         {/* Actions */}

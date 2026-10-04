@@ -1,8 +1,16 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createPersonalizedUtmeMock, getStudentUtmeSubjects } from "@/lib/actions/mock";
+import { auth } from "@/auth";
+import { isPro } from "@/lib/subscription";
 
 export default async function MockPage() {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
+
   let data;
 
   try {
@@ -12,6 +20,7 @@ export default async function MockPage() {
   }
 
   const { subjects } = data;
+  const pro = await isPro(session.user.id);
 
   async function startMock() {
     "use server";
@@ -70,7 +79,7 @@ export default async function MockPage() {
                 </p>
 
                 <p className="mt-1 text-xs text-ink/50">
-                  Included in your practice mock
+
                 </p>
               </div>
             ))}
@@ -78,23 +87,44 @@ export default async function MockPage() {
 
           <div className="mt-8 rounded-2xl border border-gold/30 bg-gold/10 p-5">
             <p className="font-semibold text-indigo">
-              Basira Practice Mock
+               Practice Mock
             </p>
 
             <p className="mt-2 text-sm leading-6 text-ink/60">
-              20 questions · 20 minutes · randomized questions ·
-              subject-specific scoring
+              20 questions · 20 minutes · randomized questions
+
             </p>
           </div>
 
-          <form action={startMock} className="mt-6">
-            <button
-              type="submit"
-              className="w-full rounded-2xl bg-indigo px-6 py-4 text-sm font-semibold text-white transition hover:opacity-90"
-            >
-              Start my mock
-            </button>
-          </form>
+          {pro ? (
+            <form action={startMock} className="mt-6">
+              <button
+                type="submit"
+                className="w-full rounded-2xl bg-indigo px-6 py-4 text-sm font-semibold text-white transition hover:opacity-90"
+              >
+                Start mock
+              </button>
+            </form>
+          ) : (
+            <div className="mt-6 rounded-2xl border border-indigo/10 bg-cloud-mist p-6">
+              <p className="font-display text-xl font-semibold text-indigo">
+                Personalized mocks are part of Basira Pro.
+              </p>
+
+              <p className="mt-2 text-sm leading-6 text-ink/60">
+                Get randomized practice built around your exact UTME subject
+                combination, with subject-specific scoring and detailed
+                performance results.
+              </p>
+
+              <Link
+                href="/upgrade"
+                className="mt-5 inline-flex w-full items-center justify-center rounded-2xl bg-indigo px-6 py-4 text-sm font-semibold text-white transition hover:opacity-90"
+              >
+                Upgrade to Pro
+              </Link>
+            </div>
+          )}
         </section>
       </div>
     </main>

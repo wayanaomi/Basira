@@ -15,12 +15,15 @@ export async function POST() {
         ? error.message
         : "Unable to create mock exam.";
 
+    const status =
+      message === "Basira Pro is required for this feature." ? 403 : 400;
+
     return NextResponse.json(
       {
         ok: false,
         error: message,
       },
-      { status: 400 },
+      { status },
     );
   }
 }

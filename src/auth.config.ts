@@ -25,6 +25,11 @@ export const authConfig = {
         "/onboarding",
         "/learn",
         "/mock",
+        "/leaderboard",
+        "/performance",
+        "/recommendations",
+        "/wrong-answers",
+        "/mock-analysis",
         "/settings",
       ];
 

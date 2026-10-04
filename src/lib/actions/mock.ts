@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { requirePro } from "@/lib/subscription";
 
 const ENGLISH_SLUG = "english";
 const UTME_SLUG = "jamb-utme";
@@ -125,6 +126,9 @@ async function getQuestionsForSubject(
 }
 
 export async function createPersonalizedUtmeMock() {
+  const userId = await requireUserId();
+  await requirePro(userId);
+
   const { subjects } = await getStudentUtmeSubjects();
 
   const english = subjects.find(

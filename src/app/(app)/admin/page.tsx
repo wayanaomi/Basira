@@ -59,8 +59,7 @@ export default async function AdminDashboardPage() {
       </h1>
 
       <p className="mt-1 text-sm text-ink/60">
-        Real activity only — this installation starts at zero and grows with
-        real users.
+        Dashboard
       </p>
 
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">

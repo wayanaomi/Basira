@@ -8,6 +8,8 @@ import { LevelProgress } from "@/components/gamification/LevelProgress";
 import { MasteryBar } from "@/components/gamification/MasteryBar";
 import { LinkButton } from "@/components/ui/Button";
 import { Sage } from "@/components/brand/Mascots";
+import { isPro } from "@/lib/subscription";
+import { getPersonalizedRecommendations } from "@/lib/actions/recommendations";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -23,8 +25,17 @@ export default async function DashboardPage() {
 
   const primarySubject = profile.subjects[0]?.subject ?? null;
 
-  const [streak, xp, dailyGoalLog, masteryRows, recommendation, readiness, upcomingMock] =
-    await Promise.all([
+  const [
+  streak,
+  xp,
+  dailyGoalLog,
+  masteryRows,
+  recommendation,
+  readiness,
+  upcomingMock,
+  pro,
+  proRecommendations,
+] = await Promise.all([
       prisma.streak.findUnique({ where: { userId } }),
       getUserXpTotal(userId),
       prisma.dailyGoalLog.findFirst({
@@ -42,6 +53,9 @@ export default async function DashboardPage() {
       profile.examId
         ? prisma.mockExam.findFirst({ where: { examId: profile.examId, isPublished: true } })
         : Promise.resolve(null),
+
+              isPro(userId),
+      getPersonalizedRecommendations(),
     ]);
 
   const level = await getLevelForXp(xp);
@@ -99,6 +113,102 @@ export default async function DashboardPage() {
             )}
           </section>
 
+          {/* Basira Pro intelligence */}
+          <section className="rounded-3xl border border-[#E8E2F0] bg-paper p-6">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-[#684FA0]">
+                  Basira Pro
+                </p>
+                <h3 className="mt-1 font-display text-xl font-semibold text-indigo">
+                  Your next best move
+                </h3>
+                <p className="mt-1 text-sm text-ink/60">
+                  Basira uses your practice history to decide what deserves
+                  your attention next.
+                </p>
+              </div>
+
+              {pro && (
+                <span className="rounded-full bg-[#E8A93F]/15 px-3 py-1 font-mono-basira text-xs font-semibold text-[#8A5D08]">
+                  PRO
+                </span>
+              )}
+            </div>
+
+            {!pro ? (
+              <div className="mt-5 rounded-2xl bg-[#F6F3FC] p-5">
+                <p className="font-semibold text-indigo">
+                  Unlock personalised study guidance
+                </p>
+
+                <p className="mt-1 max-w-xl text-sm text-ink/60">
+                  Get weakness detection, targeted revision, wrong-answer
+                  review and recommendations based on how you actually study.
+                </p>
+
+                <LinkButton
+                  href="/upgrade"
+                  variant="primary"
+                  size="sm"
+                  className="mt-4"
+                >
+                  Upgrade to Basira Pro
+                </LinkButton>
+              </div>
+            ) : proRecommendations.recommendations.length > 0 ? (
+              <div className="mt-5 grid gap-3">
+                {proRecommendations.recommendations.slice(0, 2).map((item) => (
+                  <LinkButton
+                    key={item.id}
+                    href={item.href}
+                    variant="ghost"
+                    className="h-auto justify-between rounded-2xl border border-[#E8E2F0] px-4 py-4 text-left"
+                  >
+                    <span>
+                      <span className="block font-semibold text-indigo">
+                        {item.title}
+                      </span>
+                      <span className="mt-1 block max-w-xl text-xs font-normal text-ink/60">
+                        {item.description}
+                      </span>
+                    </span>
+
+                    <span className="ml-4 shrink-0 text-xs font-semibold text-[#684FA0]">
+                      {item.actionLabel}
+                    </span>
+                  </LinkButton>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-5 rounded-2xl bg-[#F6F3FC] p-5">
+                <p className="font-semibold text-indigo">
+                  Keep building your study history.
+                </p>
+                <p className="mt-1 text-sm text-ink/60">
+                  Complete more lessons and questions so Basira can make your
+                  recommendations more precise.
+                </p>
+              </div>
+            )}
+
+            {pro && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                <LinkButton href="/performance" variant="ghost" size="sm">
+                  Performance
+                </LinkButton>
+
+                <LinkButton href="/wrong-answers" variant="ghost" size="sm">
+                  Wrong answers
+                </LinkButton>
+
+                <LinkButton href="/mock-analysis" variant="ghost" size="sm">
+                  Mock analysis
+                </LinkButton>
+              </div>
+            )}
+          </section>
+
           {/* Daily goal */}
           <section className="rounded-3xl bg-paper p-6">
             <div className="flex items-center justify-between">
@@ -123,7 +233,7 @@ export default async function DashboardPage() {
             <h3 className="font-display font-semibold text-indigo">Topic mastery</h3>
             {masteryRows.length === 0 ? (
               <p className="mt-3 text-sm text-ink/50">
-                Nothing to show yet. Complete a lesson and mastery will start tracking here.
+                Complete a lesson and mastery will start tracking here.
               </p>
             ) : (
               <div className="mt-4 flex flex-col gap-4">
@@ -150,7 +260,7 @@ export default async function DashboardPage() {
               </>
             ) : (
               <p className="mt-3 text-sm text-ink/50">
-                Not enough data yet. Complete a few lessons and practice sessions —
+                Complete a few lessons and practice sessions —
                 Basira will start measuring your preparation.
               </p>
             )}

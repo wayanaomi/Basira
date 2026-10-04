@@ -21,3 +21,13 @@ export async function isPro(userId: string) {
   const subscription = await getUserSubscription(userId);
   return subscription?.plan === "PRO";
 }
+
+export async function requirePro(userId: string) {
+  const pro = await isPro(userId);
+
+  if (!pro) {
+    throw new Error("Basira Pro is required for this feature.");
+  }
+
+  return true;
+}

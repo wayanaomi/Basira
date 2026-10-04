@@ -1,3 +1,4 @@
+import { PrismaClient } from "@prisma/client";
 /**
  * BASIRA — JAMB/UTME CORE CONTENT
  *
@@ -872,7 +873,7 @@ export const JAMB_CORE_CONTENT: SubjectContent[] = [
   crs,
 ];
 
-async function getOrCreateTopic(prisma: any, subjectId: string, topic: SeedTopic, order: number) {
+async function getOrCreateTopic(prisma: PrismaClient, subjectId: string, topic: SeedTopic, order: number) {
   return prisma.topic.upsert({
     where: {
       subjectId_slug: {
@@ -896,7 +897,7 @@ async function getOrCreateTopic(prisma: any, subjectId: string, topic: SeedTopic
 }
 
 async function getOrCreateLesson(
-  prisma: any,
+  prisma: PrismaClient,
   topicId: string,
   lesson: SeedLesson,
   order: number,
@@ -933,7 +934,7 @@ async function getOrCreateLesson(
 }
 
 async function getOrCreateQuestion(
-  prisma: any,
+  prisma: PrismaClient,
   topicId: string,
   lessonId: string,
   question: SeedQuestion,
@@ -984,7 +985,7 @@ async function getOrCreateQuestion(
 }
 
 export async function seedJambCoreContent(
-  prisma: any,
+  prisma: PrismaClient,
   jambId: string,
 ) {
   let topicCount = 0;
