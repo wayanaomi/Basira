@@ -21,6 +21,7 @@
 import "dotenv/config";
 import { prisma } from "../src/lib/prisma";
 import { seedJambCoreContent } from "./seed-data/utme-core";
+import { seedSsceIeltsCoreContent } from "./seed-data/ssce-ielts-core";
 
 async function getOrCreateLesson(data: {
   topicId: string;
@@ -194,37 +195,55 @@ async function main() {
   // ---------------------------------------------------------------------------
 
   const achievements = [
-    {
-      key: "FIRST_LESSON",
-      name: "First Lesson",
-      description: "Completed your first lesson.",
-      icon: "book",
-    },
-    {
-      key: "STREAK_7",
-      name: "7-Day Streak",
-      description: "Studied seven days in a row.",
-      icon: "flame",
-    },
-    {
-      key: "QUESTIONS_100",
-      name: "100 Questions",
-      description: "Answered 100 practice questions.",
-      icon: "check",
-    },
-    {
-      key: "TOPIC_MASTERY",
-      name: "Topic Mastery",
-      description: "Reached 80% mastery on a topic.",
-      icon: "diamond",
-    },
-    {
-      key: "FIRST_MOCK",
-      name: "First Mock Exam",
-      description: "Completed your first mock exam.",
-      icon: "clock",
-    },
-  ];
+  {
+    key: "FIRST_LESSON",
+    name: "First Lesson",
+    description: "Completed your first lesson.",
+    icon: "book",
+  },
+  {
+    key: "STREAK_3",
+    name: "Three-Day Run",
+    description: "Studied three days in a row.",
+    icon: "flame",
+  },
+  {
+    key: "STREAK_7",
+    name: "Seven-Day Streak",
+    description: "Studied seven days in a row.",
+    icon: "flame",
+  },
+  {
+    key: "QUESTIONS_10",
+    name: "First Ten",
+    description: "Answered 10 practice questions.",
+    icon: "check",
+  },
+  {
+    key: "QUESTIONS_50",
+    name: "Getting Serious",
+    description: "Answered 50 practice questions.",
+    icon: "check",
+  },
+  {
+    key: "QUESTIONS_100",
+    name: "Question Master",
+    description: "Answered 100 practice questions.",
+    icon: "check",
+  },
+  {
+    key: "TOPIC_MASTERY",
+    name: "Topic Mastery",
+    description: "Reached 80% mastery on a topic.",
+    icon: "diamond",
+  },
+  {
+    key: "FIRST_MOCK",
+    name: "First Mock Exam",
+    description: "Completed your first mock exam.",
+    icon: "clock",
+  },
+];
 
   for (const achievement of achievements) {
     await prisma.achievement.upsert({
@@ -255,7 +274,7 @@ async function main() {
     update: {},
   });
 
-  await prisma.exam.upsert({
+    const ssce = await prisma.exam.upsert({
     where: {
       slug: "ssce",
     },
@@ -270,7 +289,7 @@ async function main() {
     update: {},
   });
 
-  await prisma.exam.upsert({
+  const ielts = await prisma.exam.upsert({
     where: {
       slug: "ielts",
     },
@@ -443,6 +462,191 @@ async function main() {
     });
 
     subjects.set(subject.slug, record);
+  }
+
+    // ---------------------------------------------------------------------------
+  // IELTS SKILLS
+  // ---------------------------------------------------------------------------
+
+  const ieltsSkills = [
+    {
+      slug: "listening",
+      name: "Listening",
+      description: "Build listening comprehension, accuracy, and test technique.",
+      kind: "SKILL",
+      order: 0,
+    },
+    {
+      slug: "reading",
+      name: "Reading",
+      description: "Develop reading comprehension, vocabulary, and question strategy.",
+      kind: "SKILL",
+      order: 1,
+    },
+    {
+      slug: "writing",
+      name: "Writing",
+      description: "Develop clear, structured responses for IELTS writing tasks.",
+      kind: "SKILL",
+      order: 2,
+    },
+    {
+      slug: "speaking",
+      name: "Speaking",
+      description: "Build fluency, pronunciation, vocabulary, and speaking confidence.",
+      kind: "SKILL",
+      order: 3,
+    },
+  ];
+
+  const ieltsSubjects = new Map<
+    string,
+    Awaited<ReturnType<typeof prisma.subject.upsert>>
+  >();
+
+  for (const skill of ieltsSkills) {
+    const record = await prisma.subject.upsert({
+      where: {
+        examId_slug: {
+          examId: ielts.id,
+          slug: skill.slug,
+        },
+      },
+      create: {
+        examId: ielts.id,
+        slug: skill.slug,
+        name: skill.name,
+        description: skill.description,
+        kind: skill.kind,
+        order: skill.order,
+      },
+      update: {
+        name: skill.name,
+        description: skill.description,
+        kind: skill.kind,
+        order: skill.order,
+      },
+    });
+
+    ieltsSubjects.set(skill.slug, record);
+  }
+
+  // ---------------------------------------------------------------------------
+  // SSCE SUBJECTS
+  //
+  // These are catalogue subjects only. Educational content will be added
+  // separately from verified WAEC/NECO-aligned material.
+  // ---------------------------------------------------------------------------
+
+  const ssceSubjects = [
+    {
+      slug: "english-language",
+      name: "English Language",
+      order: 0,
+    },
+    {
+      slug: "mathematics",
+      name: "Mathematics",
+      order: 1,
+    },
+    {
+      slug: "biology",
+      name: "Biology",
+      order: 2,
+    },
+    {
+      slug: "chemistry",
+      name: "Chemistry",
+      order: 3,
+    },
+    {
+      slug: "physics",
+      name: "Physics",
+      order: 4,
+    },
+    {
+      slug: "economics",
+      name: "Economics",
+      order: 5,
+    },
+    {
+      slug: "government",
+      name: "Government",
+      order: 6,
+    },
+    {
+      slug: "literature-in-english",
+      name: "Literature-in-English",
+      order: 7,
+    },
+    {
+      slug: "christian-religious-studies",
+      name: "Christian Religious Studies",
+      order: 8,
+    },
+    {
+      slug: "geography",
+      name: "Geography",
+      order: 9,
+    },
+    {
+      slug: "commerce",
+      name: "Commerce",
+      order: 10,
+    },
+    {
+      slug: "financial-accounting",
+      name: "Financial Accounting",
+      order: 11,
+    },
+    {
+      slug: "agricultural-science",
+      name: "Agricultural Science",
+      order: 12,
+    },
+    {
+      slug: "computer-studies",
+      name: "Computer Studies",
+      order: 13,
+    },
+    {
+      slug: "civic-education",
+      name: "Civic Education",
+      order: 14,
+    },
+    {
+      slug: "further-mathematics",
+      name: "Further Mathematics",
+      order: 15,
+    },
+  ];
+
+  const ssceSubjectRecords = new Map<
+    string,
+    Awaited<ReturnType<typeof prisma.subject.upsert>>
+  >();
+
+  for (const subject of ssceSubjects) {
+    const record = await prisma.subject.upsert({
+      where: {
+        examId_slug: {
+          examId: ssce.id,
+          slug: subject.slug,
+        },
+      },
+      create: {
+        examId: ssce.id,
+        slug: subject.slug,
+        name: subject.name,
+        order: subject.order,
+      },
+      update: {
+        name: subject.name,
+        order: subject.order,
+      },
+    });
+
+    ssceSubjectRecords.set(subject.slug, record);
   }
 
   const mathematics = subjects.get("mathematics")!;
@@ -1289,19 +1493,14 @@ async function main() {
 
   // ---------------------------------------------------------------------------
   // JAMB CORE CONTENT
-  //
-  // Additional UTME subjects are seeded from:
-  // prisma/seed-data/utme-core.ts
-  //
-  // This creates educational content only.
-  // It does NOT create learner activity.
-  //
-  // IMPORTANT:
-  // We deliberately do NOT create a hard-coded Mathematics mock here.
-  // Mock exams must be generated from each student's selected subjects.
-  // ---------------------------------------------------------------------------
 
   await seedJambCoreContent(prisma, jamb.id);
+
+  await seedSsceIeltsCoreContent(
+  prisma,
+  ssce.id,
+  ielts.id,
+);
 
   // ---------------------------------------------------------------------------
   // SUMMARY

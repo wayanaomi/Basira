@@ -68,3 +68,12 @@ export const DAILY_GOAL_OPTIONS = [5, 10, 20, 30] as const;
 // prevents a brand-new learner from ever seeing a fabricated percentage.
 export const READINESS_MIN_LESSONS = 3;
 export const READINESS_MIN_QUESTIONS = 15;
+
+export const SUBSCRIPTION_PLANS = ["FREE", "PRO"] as const;
+export type SubscriptionPlan = (typeof SUBSCRIPTION_PLANS)[number];
+
+export const SUBSCRIPTION_STATUSES = ["ACTIVE", "EXPIRED", "CANCELLED"] as const;
+export type SubscriptionStatus = (typeof SUBSCRIPTION_STATUSES)[number];
+
+export const SELAR_BASIRA_PRO_URL = "https://selar.com/basira";
+export const BASIRA_PRO_PRICE = 725;

@@ -2,7 +2,13 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { awardXp, recordStreakActivity, updateTopicMastery, logDailyGoalMinutes } from "@/lib/gamification";
+import {
+  awardXp,
+  recordStreakActivity,
+  updateTopicMastery,
+  logDailyGoalMinutes,
+  evaluateAchievements,
+} from "@/lib/gamification";
 
 export async function submitAnswer({
   questionId,
@@ -16,17 +22,30 @@ export async function submitAnswer({
   source?: "LESSON" | "REVIEW" | "MOCK";
 }) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Not authenticated.");
+
+  if (!session?.user?.id) {
+    throw new Error("Not authenticated.");
+  }
+
   const userId = session.user.id;
 
   const question = await prisma.question.findUniqueOrThrow({
     where: { id: questionId },
-    include: { options: true },
+    include: {
+      options: true,
+    },
   });
 
-  const selectedOption = question.options.find((o) => o.id === selectedOptionId);
-  const isCorrect = selectedOption?.isCorrect ?? false;
-  const correctOption = question.options.find((o) => o.isCorrect);
+  const selectedOption = question.options.find(
+    (option) => option.id === selectedOptionId,
+  );
+
+  const isCorrect =
+    selectedOption?.isCorrect ?? false;
+
+  const correctOption = question.options.find(
+    (option) => option.isCorrect,
+  );
 
   await prisma.questionAttempt.create({
     data: {
@@ -39,16 +58,38 @@ export async function submitAnswer({
     },
   });
 
+  let xpAwarded = 0;
+
   if (isCorrect) {
-    await awardXp(userId, "CORRECT_ANSWER");
+    xpAwarded = await awardXp(
+      userId,
+      "CORRECT_ANSWER",
+    );
   }
 
-  await updateTopicMastery(userId, question.topicId);
+  await updateTopicMastery(
+    userId,
+    question.topicId,
+  );
+
+  /*
+   * A real answered question is meaningful activity.
+   * This means students don't have to complete an entire
+   * lesson before their streak becomes active.
+   */
+  const streak = await recordStreakActivity(userId);
+
+  const achievements =
+    await evaluateAchievements(userId);
 
   return {
     isCorrect,
     explanation: question.explanation,
-    correctOptionId: correctOption?.id ?? null,
+    correctOptionId:
+      correctOption?.id ?? null,
+    xpAwarded,
+    streak: streak.currentStreak,
+    achievements,
   };
 }
 
@@ -64,38 +105,131 @@ export async function completeLesson({
   timeSpentSeconds: number;
 }) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Not authenticated.");
+
+  if (!session?.user?.id) {
+    throw new Error("Not authenticated.");
+  }
+
   const userId = session.user.id;
 
-  const score = totalCount === 0 ? 100 : Math.round((correctCount / totalCount) * 100);
+  const existing =
+    await prisma.lessonProgress.findUnique({
+      where: {
+        userId_lessonId: {
+          userId,
+          lessonId,
+        },
+      },
+    });
+
+  const score =
+    totalCount === 0
+      ? 100
+      : Math.round(
+          (correctCount / totalCount) * 100,
+        );
 
   await prisma.lessonProgress.upsert({
-    where: { userId_lessonId: { userId, lessonId } },
-    create: { userId, lessonId, status: "COMPLETED", score, completedAt: new Date() },
-    update: { status: "COMPLETED", score, completedAt: new Date() },
+    where: {
+      userId_lessonId: {
+        userId,
+        lessonId,
+      },
+    },
+    create: {
+      userId,
+      lessonId,
+      status: "COMPLETED",
+      score,
+      completedAt: new Date(),
+    },
+    update: {
+      status: "COMPLETED",
+      score,
+      completedAt: new Date(),
+    },
   });
 
-  const xpAwarded = await awardXp(userId, "LESSON_COMPLETE", { lessonId });
-  const streak = await recordStreakActivity(userId);
-  const minutes = Math.max(1, Math.round(timeSpentSeconds / 60));
-  const goal = await logDailyGoalMinutes(userId, minutes);
+  /*
+   * Only the first actual completion earns lesson XP.
+   * Reviewing a completed lesson can still improve mastery,
+   * but it doesn't farm XP.
+   */
+  let xpAwarded = 0;
 
-  return { xpAwarded, streak: streak.currentStreak, goal };
+  if (existing?.status !== "COMPLETED") {
+    xpAwarded = await awardXp(
+      userId,
+      "LESSON_COMPLETE",
+      { lessonId },
+    );
+  }
+
+  const streak =
+    await recordStreakActivity(userId);
+
+  const minutes = Math.max(
+    1,
+    Math.round(timeSpentSeconds / 60),
+  );
+
+  const goal =
+    await logDailyGoalMinutes(
+      userId,
+      minutes,
+    );
+
+  const achievements =
+    await evaluateAchievements(userId);
+
+  return {
+    xpAwarded,
+    streak: streak.currentStreak,
+    goal,
+    achievements,
+  };
 }
 
-export async function startLesson(lessonId: string) {
+export async function startLesson(
+  lessonId: string,
+) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Not authenticated.");
+
+  if (!session?.user?.id) {
+    throw new Error("Not authenticated.");
+  }
+
   const userId = session.user.id;
 
-  const existing = await prisma.lessonProgress.findUnique({
-    where: { userId_lessonId: { userId, lessonId } },
-  });
-  if (existing?.status === "COMPLETED") return; // reviewing a completed lesson doesn't reset it
+  const existing =
+    await prisma.lessonProgress.findUnique({
+      where: {
+        userId_lessonId: {
+          userId,
+          lessonId,
+        },
+      },
+    });
+
+  if (existing?.status === "COMPLETED") {
+    return;
+  }
 
   await prisma.lessonProgress.upsert({
-    where: { userId_lessonId: { userId, lessonId } },
-    create: { userId, lessonId, status: "IN_PROGRESS", startedAt: new Date() },
-    update: { status: "IN_PROGRESS" },
+    where: {
+      userId_lessonId: {
+        userId,
+        lessonId,
+      },
+    },
+    create: {
+      userId,
+      lessonId,
+      status: "IN_PROGRESS",
+      startedAt: new Date(),
+    },
+    update: {
+      status: "IN_PROGRESS",
+    },
   });
 }
