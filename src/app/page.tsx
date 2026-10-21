@@ -74,28 +74,28 @@ export default function HomePage() {
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-9 text-sm text-[#f8f5ff]/85 md:flex">
+          <nav className="hidden items-center gap-9 text-sm text-ink/80 transition-colors dark:text-paper/85 md:flex">
             <a
               href="#method"
-              className="transition-colors hover:text-[#f8f5ff]"
+              className="transition-colors hover:text-ink dark:hover:text-paper"
             >
               How it works
             </a>
             <a
               href="#practice"
-              className="transition-colors hover:text-[#f8f5ff]"
+              className="transition-colors hover:text-ink dark:hover:text-paper"
             >
               Practice
             </a>
             <a
               href="#exams"
-              className="transition-colors hover:text-[#f8f5ff]"
+              className="transition-colors hover:text-ink dark:hover:text-paper"
             >
               Exams
             </a>
             <a
               href="#faq"
-              className="transition-colors hover:text-[#f8f5ff]"
+              className="transition-colors hover:text-ink dark:hover:text-paper"
             >
               FAQ
             </a>
