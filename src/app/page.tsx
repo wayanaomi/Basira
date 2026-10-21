@@ -53,7 +53,7 @@ const faqs = [
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen overflow-hidden bg-ink text-paper">
+    <main className="min-h-screen overflow-hidden bg-background text-foreground">
       {/* ─────────────────────────────────────────────────────────────
           HEADER
       ───────────────────────────────────────────────────────────── */}
@@ -74,28 +74,28 @@ export default function HomePage() {
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-9 text-sm text-paper/60 md:flex">
+          <nav className="hidden items-center gap-9 text-sm text-[#f8f5ff]/85 md:flex">
             <a
               href="#method"
-              className="transition-colors hover:text-paper"
+              className="transition-colors hover:text-[#f8f5ff]"
             >
               How it works
             </a>
             <a
               href="#practice"
-              className="transition-colors hover:text-paper"
+              className="transition-colors hover:text-[#f8f5ff]"
             >
               Practice
             </a>
             <a
               href="#exams"
-              className="transition-colors hover:text-paper"
+              className="transition-colors hover:text-[#f8f5ff]"
             >
               Exams
             </a>
             <a
               href="#faq"
-              className="transition-colors hover:text-paper"
+              className="transition-colors hover:text-[#f8f5ff]"
             >
               FAQ
             </a>
@@ -106,7 +106,7 @@ export default function HomePage() {
 
             <Link
               href="/login"
-              className="hidden text-sm font-medium text-paper/70 transition-colors hover:text-paper sm:block"
+              className="hidden text-sm font-medium text-[#f8f5ff]/90 transition-colors hover:text-[#f8f5ff] sm:block"
             >
               Log in
             </Link>
@@ -145,17 +145,17 @@ export default function HomePage() {
               </h1>
 
               <div className="mt-10 grid max-w-2xl grid-cols-[1fr_auto] gap-8">
-                <p className="max-w-xl text-lg leading-8 text-paper/60">
+                <p className="max-w-xl text-lg leading-8 text-[#f8f5ff]/85">
                   Basira turns exam preparation into something you can
                   actually return to every day: one useful lesson, a few
                   questions, immediate feedback, then the next step.
                 </p>
 
                 <div className="hidden border-l border-paper/15 pl-5 sm:block">
-                  <p className="font-mono-basira text-[10px] uppercase tracking-[0.2em] text-paper/35">
+                  <p className="font-mono-basira text-[10px] uppercase tracking-[0.2em] text-[#f8f5ff]/70">
                     Promise
                   </p>
-                  <p className="mt-2 max-w-[110px] text-sm font-semibold leading-5 text-paper/80">
+                  <p className="mt-2 max-w-[110px] text-sm font-semibold leading-5 text-[#f8f5ff]/95">
                     A little insight, every day.
                   </p>
                 </div>
@@ -172,7 +172,7 @@ export default function HomePage() {
 
                 <a
                   href="#method"
-                  className="inline-flex items-center gap-3 border border-paper/20 px-7 py-4 font-semibold text-paper/80 transition-colors hover:border-paper/40 hover:text-paper"
+                  className="inline-flex items-center gap-3 border border-paper/20 px-7 py-4 font-semibold text-[#f8f5ff]/95 transition-colors hover:border-paper/40 hover:text-[#f8f5ff]"
                 >
                   See the method
                   <ArrowDown className="h-4 w-4" />
@@ -182,11 +182,11 @@ export default function HomePage() {
           </div>
 
           {/* Right — editorial study desk */}
-          <div className="relative min-h-[620px] overflow-hidden bg-[#171027]">
+          <div className="relative min-h-[620px] overflow-hidden bg-[#171027] text-[#f8f5ff]">
             <div className="absolute inset-x-0 top-0 h-px bg-gold/30" />
 
             {/* vertical index */}
-            <div className="absolute left-6 top-8 font-mono-basira text-[10px] uppercase tracking-[0.25em] text-paper/25">
+            <div className="absolute left-6 top-8 font-mono-basira text-[10px] uppercase tracking-[0.25em] text-[#f8f5ff]/65">
               BASIRA / 001
             </div>
 
@@ -264,7 +264,7 @@ export default function HomePage() {
               </div>
 
               <div className="max-w-[190px] border border-paper/10 bg-ink px-4 py-3">
-                <p className="text-sm font-semibold leading-5 text-paper">
+                <p className="text-sm font-semibold leading-5 text-[#f8f5ff]">
                   Don&apos;t rush it. Understand it.
                 </p>
               </div>
@@ -357,7 +357,7 @@ export default function HomePage() {
 
       <section
         id="practice"
-        className="border-b border-paper/10 bg-ink text-paper"
+        className="border-b border-paper/10 bg-[#100b1c] text-[#f8f5ff]"
       >
         <div className="mx-auto max-w-[1440px] px-6 py-24 lg:px-10 lg:py-32">
           <div className="flex flex-col justify-between gap-8 border-b border-paper/10 pb-10 lg:flex-row lg:items-end">
@@ -372,7 +372,7 @@ export default function HomePage() {
               </h2>
             </div>
 
-            <p className="max-w-xs leading-7 text-paper/50">
+            <p className="max-w-xs leading-7 text-[#f8f5ff]/80">
               Practice is where preparation becomes measurable. Answer,
               review, understand, return.
             </p>
@@ -380,13 +380,13 @@ export default function HomePage() {
 
           <div className="mt-12 grid gap-10 lg:grid-cols-[1fr_0.72fr]">
             {/* question stack */}
-            <div className="border border-paper/10 bg-[#171027]">
+            <div className="border border-paper/10 bg-[#171027] text-[#f8f5ff]">
               <div className="flex items-center justify-between border-b border-paper/10 px-6 py-4">
-                <span className="font-mono-basira text-[10px] uppercase tracking-[0.18em] text-paper/35">
+                <span className="font-mono-basira text-[10px] uppercase tracking-[0.18em] text-[#f8f5ff]/70">
                   PRACTICE / USE OF ENGLISH
                 </span>
 
-                <span className="font-mono-basira text-[10px] text-paper/35">
+                <span className="font-mono-basira text-[10px] text-[#f8f5ff]/70">
                   07 / 20
                 </span>
               </div>
@@ -396,7 +396,7 @@ export default function HomePage() {
                   Question
                 </p>
 
-                <h3 className="mt-5 max-w-2xl font-display text-2xl font-bold leading-9">
+                <h3 className="mt-5 max-w-2xl font-display text-2xl font-bold leading-9 text-[#f8f5ff]">
                   {questions[1].question}
                 </h3>
 
@@ -406,11 +406,11 @@ export default function HomePage() {
                       key={option}
                       className="flex items-center gap-4 border border-paper/10 px-5 py-4 transition-colors hover:border-paper/25"
                     >
-                      <span className="font-mono-basira text-xs text-paper/30">
+                      <span className="font-mono-basira text-xs text-[#f8f5ff]/70">
                         {String.fromCharCode(65 + index)}
                       </span>
 
-                      <span className="text-sm text-paper/80">
+                      <span className="text-sm text-[#f8f5ff]/95">
                         {option}
                       </span>
                     </div>
@@ -422,7 +422,7 @@ export default function HomePage() {
                     After your answer
                   </p>
 
-                  <p className="mt-2 text-sm leading-6 text-paper/60">
+                  <p className="mt-2 text-sm leading-6 text-[#f8f5ff]/85">
                     Basira explains the answer so the question becomes part
                     of what you know, not just another number on a scorecard.
                   </p>
@@ -443,14 +443,14 @@ export default function HomePage() {
                   A wrong answer is useful when you learn from it.
                 </h3>
 
-                <p className="mt-6 max-w-sm leading-7 text-paper/50">
+                <p className="mt-6 max-w-sm leading-7 text-[#f8f5ff]/80">
                   Basira is built around the gap between “I saw this before”
                   and “I can actually answer this under pressure.”
                 </p>
               </div>
 
               <div className="mt-12 border-t border-paper/10 pt-7">
-                <p className="font-mono-basira text-[9px] uppercase tracking-[0.18em] text-paper/30">
+                <p className="font-mono-basira text-[9px] uppercase tracking-[0.18em] text-[#f8f5ff]/70">
                   THE LOOP
                 </p>
 
@@ -519,7 +519,7 @@ export default function HomePage() {
           SAGE
       ───────────────────────────────────────────────────────────── */}
 
-      <section className="border-b border-paper/10 bg-[#171027]">
+      <section className="border-b border-paper/10 bg-[#171027] text-[#f8f5ff]">
         <div className="mx-auto grid max-w-[1440px] lg:grid-cols-[0.7fr_1.3fr]">
           <div className="flex min-h-[460px] items-center justify-center border-r border-paper/10 p-10">
             <div className="relative">
@@ -544,7 +544,7 @@ export default function HomePage() {
                 <span className="text-violet">Keep going.</span>
               </h2>
 
-              <p className="mt-7 max-w-xl text-lg leading-8 text-paper/55">
+              <p className="mt-7 max-w-xl text-lg leading-8 text-[#f8f5ff]/90">
                 Sage is Basira&apos;s study companion — calm when you are
                 stuck, direct when you need direction, and never louder than
                 the work itself.
@@ -554,7 +554,7 @@ export default function HomePage() {
                 <p className="font-display text-xl font-semibold">
                   “You don&apos;t have to finish everything today.”
                 </p>
-                <p className="mt-2 text-sm text-paper/40">
+                <p className="mt-2 text-sm text-[#f8f5ff]/85">
                   Just know what to do next.
                 </p>
               </div>
@@ -608,7 +608,7 @@ export default function HomePage() {
           FINAL CTA
       ───────────────────────────────────────────────────────────── */}
 
-      <section className="border-t border-paper/10 bg-ink">
+      <section className="border-t border-paper/10 bg-[#100b1c] text-[#f8f5ff]">
         <div className="mx-auto max-w-[1440px] px-6 py-24 lg:px-10 lg:py-32">
           <div className="grid gap-12 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
@@ -632,16 +632,16 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="mt-16 flex flex-col justify-between gap-5 border-t border-paper/10 pt-6 text-xs text-paper/35 sm:flex-row">
+          <div className="mt-16 flex flex-col justify-between gap-5 border-t border-paper/10 pt-6 text-xs text-[#f8f5ff]/70 sm:flex-row">
             <p>
               BASIRA — A little insight, every day.
             </p>
 
             <div className="flex gap-6">
-              <Link href="/login" className="hover:text-paper">
+              <Link href="/login" className="hover:text-[#f8f5ff]">
                 Log in
               </Link>
-              <Link href="/register" className="hover:text-paper">
+              <Link href="/register" className="hover:text-[#f8f5ff]">
                 Create account
               </Link>
             </div>
