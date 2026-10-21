@@ -74,28 +74,28 @@ export default function HomePage() {
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-9 text-sm text-ink/80 transition-colors dark:text-paper/85 md:flex">
+          <nav className="flex items-center gap-3 text-xs font-semibold text-ink transition-colors sm:gap-5 sm:text-sm md:gap-9">
             <a
               href="#method"
-              className="transition-colors hover:text-ink dark:hover:text-paper"
+              className="text-ink transition-colors hover:text-indigo"
             >
               How it works
             </a>
             <a
               href="#practice"
-              className="transition-colors hover:text-ink dark:hover:text-paper"
+              className="text-ink transition-colors hover:text-indigo"
             >
               Practice
             </a>
             <a
               href="#exams"
-              className="transition-colors hover:text-ink dark:hover:text-paper"
+              className="text-ink transition-colors hover:text-indigo"
             >
               Exams
             </a>
             <a
               href="#faq"
-              className="transition-colors hover:text-ink dark:hover:text-paper"
+              className="text-ink transition-colors hover:text-indigo"
             >
               FAQ
             </a>
@@ -106,7 +106,7 @@ export default function HomePage() {
 
             <Link
               href="/login"
-              className="hidden text-sm font-medium text-[#f8f5ff]/90 transition-colors hover:text-[#f8f5ff] sm:block"
+              className="hidden text-sm font-medium text-ink/80 transition-colors hover:text-[#f8f5ff] sm:block"
             >
               Log in
             </Link>
@@ -145,17 +145,17 @@ export default function HomePage() {
               </h1>
 
               <div className="mt-10 grid max-w-2xl grid-cols-[1fr_auto] gap-8">
-                <p className="max-w-xl text-lg leading-8 text-[#f8f5ff]/85">
+                <p className="max-w-xl text-lg leading-8 text-ink/75">
                   Basira turns exam preparation into something you can
                   actually return to every day: one useful lesson, a few
                   questions, immediate feedback, then the next step.
                 </p>
 
                 <div className="hidden border-l border-paper/15 pl-5 sm:block">
-                  <p className="font-mono-basira text-[10px] uppercase tracking-[0.2em] text-[#f8f5ff]/70">
+                  <p className="font-mono-basira text-[10px] uppercase tracking-[0.2em] text-ink/65">
                     Promise
                   </p>
-                  <p className="mt-2 max-w-[110px] text-sm font-semibold leading-5 text-[#f8f5ff]/95">
+                  <p className="mt-2 max-w-[110px] text-sm font-semibold leading-5 text-ink/85">
                     A little insight, every day.
                   </p>
                 </div>
@@ -172,7 +172,7 @@ export default function HomePage() {
 
                 <a
                   href="#method"
-                  className="inline-flex items-center gap-3 border border-paper/20 px-7 py-4 font-semibold text-[#f8f5ff]/95 transition-colors hover:border-paper/40 hover:text-[#f8f5ff]"
+                  className="inline-flex items-center gap-3 border border-paper/20 px-7 py-4 font-semibold text-ink/85 transition-colors hover:border-paper/40 hover:text-[#f8f5ff]"
                 >
                   See the method
                   <ArrowDown className="h-4 w-4" />
@@ -382,11 +382,11 @@ export default function HomePage() {
             {/* question stack */}
             <div className="border border-paper/10 bg-[#171027] text-[#f8f5ff]">
               <div className="flex items-center justify-between border-b border-paper/10 px-6 py-4">
-                <span className="font-mono-basira text-[10px] uppercase tracking-[0.18em] text-[#f8f5ff]/70">
+                <span className="font-mono-basira text-[10px] uppercase tracking-[0.18em] text-[#c8bfd9]">
                   PRACTICE / USE OF ENGLISH
                 </span>
 
-                <span className="font-mono-basira text-[10px] text-[#f8f5ff]/70">
+                <span className="font-mono-basira text-[10px] text-[#c8bfd9]">
                   07 / 20
                 </span>
               </div>
@@ -406,11 +406,11 @@ export default function HomePage() {
                       key={option}
                       className="flex items-center gap-4 border border-paper/10 px-5 py-4 transition-colors hover:border-paper/25"
                     >
-                      <span className="font-mono-basira text-xs text-[#f8f5ff]/70">
+                      <span className="font-mono-basira text-xs text-[#c8bfd9]">
                         {String.fromCharCode(65 + index)}
                       </span>
 
-                      <span className="text-sm text-[#f8f5ff]/95">
+                      <span className="text-sm text-[#f8f5ff]">
                         {option}
                       </span>
                     </div>
@@ -422,7 +422,7 @@ export default function HomePage() {
                     After your answer
                   </p>
 
-                  <p className="mt-2 text-sm leading-6 text-[#f8f5ff]/85">
+                  <p className="mt-2 text-sm leading-6 text-[#d8d1e5]">
                     Basira explains the answer so the question becomes part
                     of what you know, not just another number on a scorecard.
                   </p>
@@ -450,7 +450,7 @@ export default function HomePage() {
               </div>
 
               <div className="mt-12 border-t border-paper/10 pt-7">
-                <p className="font-mono-basira text-[9px] uppercase tracking-[0.18em] text-[#f8f5ff]/70">
+                <p className="font-mono-basira text-[9px] uppercase tracking-[0.18em] text-[#c8bfd9]">
                   THE LOOP
                 </p>
 
@@ -544,7 +544,7 @@ export default function HomePage() {
                 <span className="text-violet">Keep going.</span>
               </h2>
 
-              <p className="mt-7 max-w-xl text-lg leading-8 text-[#f8f5ff]/90">
+              <p className="mt-7 max-w-xl text-lg leading-8 text-ink/80">
                 Sage is Basira&apos;s study companion — calm when you are
                 stuck, direct when you need direction, and never louder than
                 the work itself.
@@ -554,7 +554,7 @@ export default function HomePage() {
                 <p className="font-display text-xl font-semibold">
                   “You don&apos;t have to finish everything today.”
                 </p>
-                <p className="mt-2 text-sm text-[#f8f5ff]/85">
+                <p className="mt-2 text-sm text-ink/75">
                   Just know what to do next.
                 </p>
               </div>
@@ -632,7 +632,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="mt-16 flex flex-col justify-between gap-5 border-t border-paper/10 pt-6 text-xs text-[#f8f5ff]/70 sm:flex-row">
+          <div className="mt-16 flex flex-col justify-between gap-5 border-t border-paper/10 pt-6 text-xs text-ink/65 sm:flex-row">
             <p>
               BASIRA — A little insight, every day.
             </p>

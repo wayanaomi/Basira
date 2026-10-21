@@ -3,19 +3,39 @@
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
+const EVENT_NAME = "basira-theme-change";
+
+function getTheme(): boolean {
+  return document.documentElement.classList.contains("dark");
+}
+
+function applyTheme(dark: boolean) {
+  document.documentElement.classList.toggle("dark", dark);
+  localStorage.setItem("basira-theme", dark ? "dark" : "light");
+  window.dispatchEvent(new CustomEvent(EVENT_NAME, { detail: dark }));
+}
+
 export function ThemeToggle() {
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
-    setDark(document.documentElement.classList.contains("dark"));
+    const sync = (event: Event) => {
+      const custom = event as CustomEvent<boolean>;
+      setDark(typeof custom.detail === "boolean" ? custom.detail : getTheme());
+    };
+
+    setDark(getTheme());
+    window.addEventListener(EVENT_NAME, sync);
+    window.addEventListener("storage", sync);
+
+    return () => {
+      window.removeEventListener(EVENT_NAME, sync);
+      window.removeEventListener("storage", sync);
+    };
   }, []);
 
   function toggleTheme() {
-    const next = !document.documentElement.classList.contains("dark");
-    document.documentElement.classList.toggle("dark", next);
-
-    localStorage.setItem("basira-theme", next ? "dark" : "light");
-    setDark(next);
+    applyTheme(!getTheme());
   }
 
   return (

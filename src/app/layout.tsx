@@ -1,24 +1,11 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Inter, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-});
-
-const inter = Inter({
-  variable: "--font-body",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-});
-
-const ibmPlexMono = IBM_Plex_Mono({
-  variable: "--font-mono-basira",
-  subsets: ["latin"],
-  weight: ["500", "600"],
-});
+const fontVariables = {
+  display: "var(--font-display, Arial, sans-serif)",
+  body: "var(--font-body, Arial, sans-serif)",
+  mono: "var(--font-mono-basira, monospace)",
+};
 
 export const metadata: Metadata = {
   title: "Basira — Turn exam anxiety into exam readiness",
@@ -33,7 +20,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${spaceGrotesk.variable} ${inter.variable} ${ibmPlexMono.variable} h-full antialiased`}
+      className="h-full antialiased"
     >
       <body className="min-h-full flex flex-col bg-mist text-ink font-body">
         <script
@@ -43,15 +30,12 @@ export default function RootLayout({
                 try {
                   const theme = localStorage.getItem("basira-theme");
 
-                  if (
+                  const useDark =
                     theme === "dark" ||
-                    (
-                      !theme &&
-                      window.matchMedia("(prefers-color-scheme: dark)").matches
-                    )
-                  ) {
-                    document.documentElement.classList.add("dark");
-                  }
+                    (!theme &&
+                      window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+                  document.documentElement.classList.toggle("dark", useDark);
                 } catch {}
               })();
             `,
