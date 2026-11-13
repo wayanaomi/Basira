@@ -106,7 +106,7 @@ export default function HomePage() {
 
             <Link
               href="/login"
-              className="hidden text-sm font-medium text-ink/80 transition-colors hover:text-[#f8f5ff] sm:block"
+              className="hidden text-sm font-medium text-ink/80 transition-colors hover:text-indigo sm:block"
             >
               Log in
             </Link>
@@ -172,7 +172,7 @@ export default function HomePage() {
 
                 <a
                   href="#method"
-                  className="inline-flex items-center gap-3 border border-paper/20 px-7 py-4 font-semibold text-ink/85 transition-colors hover:border-paper/40 hover:text-[#f8f5ff]"
+                  className="inline-flex items-center gap-3 border border-ink/20 px-7 py-4 font-semibold text-ink/85 transition-colors hover:border-indigo hover:text-indigo"
                 >
                   See the method
                   <ArrowDown className="h-4 w-4" />
@@ -544,7 +544,7 @@ export default function HomePage() {
                 <span className="text-violet">Keep going.</span>
               </h2>
 
-              <p className="mt-7 max-w-xl text-lg leading-8 text-ink/80">
+              <p className="mt-7 max-w-xl text-lg leading-8 text-[#d8d1e5]">
                 Sage is Basira&apos;s study companion — calm when you are
                 stuck, direct when you need direction, and never louder than
                 the work itself.
@@ -554,7 +554,7 @@ export default function HomePage() {
                 <p className="font-display text-xl font-semibold">
                   “You don&apos;t have to finish everything today.”
                 </p>
-                <p className="mt-2 text-sm text-ink/75">
+                <p className="mt-2 text-sm text-[#d8d1e5]">
                   Just know what to do next.
                 </p>
               </div>
@@ -632,16 +632,16 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="mt-16 flex flex-col justify-between gap-5 border-t border-paper/10 pt-6 text-xs text-ink/65 sm:flex-row">
+          <div className="mt-16 flex flex-col justify-between gap-5 border-t border-paper/10 pt-6 text-xs text-[#c8bfd9] sm:flex-row">
             <p>
               BASIRA — A little insight, every day.
             </p>
 
             <div className="flex gap-6">
-              <Link href="/login" className="hover:text-[#f8f5ff]">
+              <Link href="/login" className="hover:text-gold">
                 Log in
               </Link>
-              <Link href="/register" className="hover:text-[#f8f5ff]">
+              <Link href="/register" className="hover:text-gold">
                 Create account
               </Link>
             </div>
